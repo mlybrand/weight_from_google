@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>My Weight</title>
+</head>
+<body>
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.js"></script>
+	<script>
+
+	d3.text('/weights', function(text) {
+		var data = d3.csv.parseRows(text).map(function(row) {
+			return [new Date(row[0]), +row[1], +row[2]];
+		});
+		data = data.slice(0, 34);
+
+		var xRange = d3.scale.linear()
+				.range([0 + 20, 1000 - 20])
+				.domain([
+						d3.min(data, function(d) {
+							return d[0];
+						}),
+						d3.max(data, function(d) {
+							return d[0];
+						})
+					]), 
+			yRange = d3.scale.linear()
+				.range([500 - 20, 0 + 20])
+				.domain([
+					d3.min(data, function(d) {
+						return d[1];
+					}), 
+					d3.max(data, function(d) {
+						return d[1];
+					})]);
+
+		var lineFunc = d3.svg.line()
+			.x(function(d) {
+				return xRange(d[0]);
+			})
+			.y(function(d) {
+				return yRange(d[2]);
+			})
+			.interpolate('linear');
+
+		var svg = d3.select('body')
+			.append('svg')
+			.attr('width', 1000)
+			.attr('height', 500);
+		svg.append('path')
+			.attr('d', lineFunc(data))
+			.attr('stroke', 'blue')
+			.attr('stroke-width', 2)
+			.attr('fill', 'none');
+
+		svg.selectAll('.trend')
+			.data(data)
+			.enter()
+			.append('circle')
+			.attr('class', 'trend')
+			.attr('cx', function(d) {
+				return xRange(d[0]);
+			})
+			.attr('cy', function(d) {
+				return yRange(d[2]);
+			})
+			.attr('r', 5);
+
+		svg.selectAll('.measured')
+			.data(data)
+			.enter()
+			.append('circle')
+			.attr('class', 'measured')
+			.attr('cx', function(d) {
+				return xRange(d[0]);
+			})
+			.attr('cy', function(d) {
+				return yRange(d[1]);
+			})
+			.attr('r', 5);
+
+		svg.selectAll('.connector')
+			.data(data)
+			.enter()
+			.append('line')
+			.attr('class', 'connector')
+			.style('stroke', 'black')
+			.attr('x1', function(d) {
+				return xRange(d[0]);
+			})
+			.attr('y1', function(d) {
+				return yRange(d[2]);
+			})
+			.attr('x2', function(d) {
+				return xRange(d[0]);
+			})
+			.attr('y2', function(d) {
+				return yRange(d[1]);
+			});
+
+	});
+	</script>
+</body>
+</html>
